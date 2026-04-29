@@ -326,9 +326,16 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
+                                                    @forelse($roomNumbers as $item)
                                                     <tr>
-                                                        <td>Mark</td>
-                                                        <td>Otto</td>
+                                                        <td>{{ $item->room_number }}</td>
+                                                        <td>
+                                                            @if($item->status == 1)
+                                                                 <span class="badge bg-success">Active</span>
+                                                            @else
+                                                                 <span class="badge bg-danger">Inactive</span>
+                                                            @endif
+                                                        </td>
                                                         <td>
                                                             <a href="" class="btn btn-warning px-3 radius-30">Edit</a>
                                                             {{-- form Xóa --}}
@@ -336,6 +343,11 @@
                                                                 id="delete">Delete</a>
                                                         </td>
                                                     </tr>
+                                                    @empty
+                                                    <tr>
+                                                        <td colspan="3" class="text-center">Không có dữ liệu</td>
+                                                    </tr>
+                                                    @endforelse
                                                 </tbody>
                                             </table>
 

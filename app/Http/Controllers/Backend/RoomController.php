@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use App\Models\RoomNumber;
 
 class RoomController extends Controller
 {
@@ -20,7 +21,8 @@ class RoomController extends Controller
         $basic_facility = Facility::where('rooms_id', $id)->get();
         $multi_images = MultiImage::where('rooms_id', $id)->get();
         $editData = Room::find($id);
-        return view('backend.all_room.rooms.edit_room', compact('editData', 'basic_facility', 'multi_images'));
+        $roomNumbers = RoomNumber::where('rooms_id', $id)->get();
+        return view('backend.all_room.rooms.edit_room', compact('editData', 'basic_facility', 'multi_images','roomNumbers'));
     }
 
     // Update Room Method
