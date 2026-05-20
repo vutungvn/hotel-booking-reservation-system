@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Session;
 use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Omnipay;
 use Srmklive\PayPal\Services\PayPal as PayPalClient;
+use Stripe\Stripe;
+use Stripe\Charge;
 
 class BookingController extends Controller
 {
@@ -622,6 +624,187 @@ class BookingController extends Controller
             ->route('checkout')
             ->with('error', 'Payment Cancelled');
     }
+
+    public function StripePayment(Request $request)
+{
+    $request->validate([
+
+        'name' => 'required',
+        'email' => 'required|email',
+        'country' => 'required',
+        'phone' => 'required',
+        'address' => 'required',
+        'state' => 'required',
+        'zip_code' => 'required',
+
+    ]);
+
+    Session::put('stripe_data', [
+
+        'name' => $request->name,
+        'email' => $request->email,
+        'country' => $request->country,
+        'phone' => $request->phone,
+        'address' => $request->address,
+        'state' => $request->state,
+        'zip_code' => $request->zip_code,
+
+    ]);
+
+    return view('frontend.payment.stripe');
+}
+public function StripeOrder(Request $request)
+{
+    if (! Session::has('book_date') || ! Session::has('stripe_data')) {
+
+        return redirect()
+            ->route('checkout')
+            ->with('error', 'Session expired');
+    }
+
+    $book_data = Session::get('book_date');
+
+    $stripe_data = Session::get('stripe_data');
+
+    $room = Room::find($book_data['room_id']);
+
+    $toDate = Carbon::parse($book_data['check_in']);
+
+    $fromDate = Carbon::parse($book_data['check_out']);
+
+    $total_nights = $toDate->diffInDays($fromDate);
+
+    $subtotal =
+        $room->price *
+        $total_nights *
+        $book_data['number_of_rooms'];
+
+    $discount =
+        ($room->discount / 100) *
+        $subtotal;
+
+    $total_price =
+        $subtotal - $discount;
+
+    Stripe::setApiKey(env('STRIPE_SECRET'));
+
+    try {
+
+        $charge = Charge::create([
+
+            "amount" => round($total_price * 100),
+
+            "currency" => "usd",
+
+            "source" => "tok_visa",
+
+            "description" => "Room Booking Payment"
+
+        ]);
+
+        $booking = new Booking;
+
+        $booking->rooms_id = $room->id;
+
+        $booking->user_id = Auth::id();
+
+        $booking->check_in = $book_data['check_in'];
+
+        $booking->check_out = $book_data['check_out'];
+
+        $booking->person = $book_data['person'];
+
+        $booking->number_of_rooms = $book_data['number_of_rooms'];
+
+        $booking->total_night = $total_nights;
+
+        $booking->actual_price = $room->price;
+
+        $booking->subtotal = $subtotal;
+
+        $booking->discount = $discount;
+
+        $booking->total_price = $total_price;
+
+        $booking->payment_method = 'Stripe';
+
+        $booking->transaction_id = $charge->id;
+
+        $booking->payment_status = 1;
+
+        $booking->name = $stripe_data['name'];
+
+        $booking->email = $stripe_data['email'];
+
+        $booking->phone = $stripe_data['phone'];
+
+        $booking->country = $stripe_data['country'];
+
+        $booking->state = $stripe_data['state'];
+
+        $booking->zip_code = $stripe_data['zip_code'];
+
+        $booking->address = $stripe_data['address'];
+
+        $booking->code = rand(100000000, 999999999);
+
+        $booking->status = 0;
+
+        $booking->created_at = Carbon::now();
+
+        $booking->save();
+
+        // Room Booked Dates
+
+        $startDate =
+            Carbon::createFromFormat(
+                'd-m-Y',
+                $book_data['check_in']
+            );
+
+        $endDate =
+            Carbon::createFromFormat(
+                'd-m-Y',
+                $book_data['check_out']
+            );
+
+        $endDate = $endDate->subDay();
+
+        $day_period =
+            CarbonPeriod::create(
+                $startDate,
+                $endDate
+            );
+
+        foreach ($day_period as $period) {
+
+            $booked_dates = new RoomBookedDate;
+
+            $booked_dates->booking_id = $booking->id;
+
+            $booked_dates->room_id = $room->id;
+
+            $booked_dates->book_date =
+                $period->format('Y-m-d');
+
+            $booked_dates->save();
+        }
+
+        Session::forget('book_date');
+
+        Session::forget('stripe_data');
+
+        return redirect()
+            ->route('place.order')
+            ->with('success', 'Stripe Payment Successfully');
+
+    } catch (\Exception $e) {
+
+        return redirect()
+            ->back()
+            ->with('error', $e->getMessage());
+    }
+}
 }
 
 // test Paypal tk personal

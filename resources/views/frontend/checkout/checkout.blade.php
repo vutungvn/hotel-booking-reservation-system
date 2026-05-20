@@ -21,7 +21,7 @@
     <!-- Checkout Area -->
     <section class="checkout-area pt-100 pb-70">
         <div class="container">
-            <form method="POST" action="{{ route('checkout.store') }}">
+            <form  id="checkoutForm" method="POST" action="{{ route('checkout.store') }}">
                 @csrf
                 <div class="row">
                     <div class="col-lg-8">
@@ -264,7 +264,7 @@
                             </div>
 
                             <div class="payment-actions">
-                                <button type="submit" class="order-btn three place-order-btn">
+                                <button type="button" id="placeOrderBtn" class="order-btn three place-order-btn">
                                     Place to Order
                                 </button>
 
@@ -519,3 +519,37 @@
         }
     }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+    if (placeOrderBtn) {
+
+        placeOrderBtn.addEventListener('click', function () {
+
+            let paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+
+            if (!paymentMethod) {
+
+                alert('Please select payment method');
+                return;
+            }
+
+            let form = document.getElementById('checkoutForm');
+
+            if (paymentMethod.value === 'Stripe') {
+
+                form.action = "{{ route('stripe.payment') }}";
+
+            } else {
+
+                form.action = "{{ route('checkout.store') }}";
+            }
+
+            form.submit();
+        });
+    }
+});
+</script>

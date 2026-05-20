@@ -135,6 +135,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/success', 'PaypalSuccess')->name('paypal.success');
             Route::get('/cancel', 'PaypalCancel')->name('paypal.cancel');
         });
+        // Payment by stripe
+        Route::post('/stripe/payment', 'StripePayment')->name('stripe.payment');
+        Route::post('/stripe/order', 'StripeOrder')->name('stripe.order');
     });
 });
 
