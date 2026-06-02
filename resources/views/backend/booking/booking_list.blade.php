@@ -58,8 +58,19 @@
                                     <td>@if ($item->payment_status == '1') <span class="badge bg-success">Complete</span> @else
                                     <span class="badge bg-danger">Pending</span> @endif
                                     </td>
-                                    <td>@if ($item->status == 1) <span class="badge bg-success">Complete</span> @else
-                                    <span class="badge bg-danger">Pending</span> @endif
+                                    <td>
+                                        @if ($item->status == 'Pending')
+                                            <span class="badge bg-warning">Pending</span>
+
+                                        @elseif ($item->status == 'Confirmed')
+                                            <span class="badge bg-primary">Confirmed</span>
+
+                                        @elseif ($item->status == 'Completed')
+                                            <span class="badge bg-success">Completed</span>
+
+                                        @elseif ($item->status == 'Cancelled')
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <a href="" class="btn btn-danger px-3 radius-30" id="delete">Delete</a>

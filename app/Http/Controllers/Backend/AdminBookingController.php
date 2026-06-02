@@ -28,21 +28,40 @@ class AdminBookingController extends Controller
     }
 
     // Update Booking Status Method
+    
     public function UpdateBookingStatus(Request $request, $id)
     {
-        $booking = Booking::find($id);
+        $booking = Booking::findOrFail($id);
+
         $booking->payment_status = $request->payment_status;
-        $booking->status = $request->status;
         $booking->save();
 
-        // Thông báo thành công
-        $notification = array(
-            'message' => 'Updated Information Successfully.',
-            'alert-type' => 'success'
-        );
+        $map = [
+            'Confirmed' => 'confirm',
+            'Completed' => 'complete',
+            'Cancelled' => 'cancel',
+        ];
+
+        try {
+            if (isset($map[$request->status])) {
+                $booking->transition($map[$request->status]);
+            }
+
+            $notification = [
+                'message' => 'Updated Information Successfully.',
+                'alert-type' => 'success'
+            ];
+
+        } catch (\Exception $e) {
+            $notification = [
+                'message' => $e->getMessage(),
+                'alert-type' => 'error'
+            ];
+        }
 
         return redirect()->back()->with($notification);
     }
+
 
     // Update Booking Method
     public function UpdateBooking(Request $request, $id)

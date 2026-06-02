@@ -81,10 +81,23 @@
                         <div class="d-flex align-items-center">
                             <div>
                                 <p class="mb-0 text-secondary">Booking Status</p>
-                                <h4 class="my-1 text-warning">@if ($editData->status == 1) <span
-                                class="text-success">Complete</span> @else
-                                        <span class="text-danger">Pending</span> @endif
+
+                                <h4 class="my-1">
+                                    @if ($editData->isPending())
+                                        <span class="text-warning">Pending</span>
+
+                                    @elseif ($editData->isConfirmed())
+                                        <span class="text-primary">Confirmed</span>
+
+                                    @elseif ($editData->isCompleted())
+                                        <span class="text-success">Completed</span>
+
+                                    @elseif ($editData->isCancelled())
+                                        <span class="text-danger">Cancelled</span>
+
+                                    @endif
                                 </h4>
+
                             </div>
                             <div class="widgets-icons-2 rounded-circle bg-gradient-orange text-white ms-auto"><i
                                     class='bx bx-check-shield'></i>
@@ -326,14 +339,16 @@
                                         </label>
 
                                         <select name="status" class="form-select custom-select">
+  
+                                            @if ($editData->status == 'Pending')
+                                                <option value="Confirmed">Confirm</option>
+                                                <option value="Cancelled">Cancel</option>
+                                            @endif
 
-                                            <option value="0" {{ $editData->status == 0 ? 'selected' : '' }}>
-                                                Pending
-                                            </option>
-
-                                            <option value="1" {{ $editData->status == 1 ? 'selected' : '' }}>
-                                                Complete
-                                            </option>
+                                            @if ($editData->status == 'Confirmed')
+                                                <option value="Completed">Complete</option>
+                                                <option value="Cancelled">Cancel</option>
+                                            @endif
 
                                         </select>
                                     </div>
