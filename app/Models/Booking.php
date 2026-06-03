@@ -75,9 +75,8 @@ class Booking extends Model
             return $this;
 
         } catch (\Exception $e) {
-            throw new \Exception(
-                "Cannot {$action} booking from status {$state->getStatus()}"
-            );
+            throw $e;
+            
         }
     }
 

@@ -16,7 +16,9 @@ class AdminBookingController extends Controller
     // Booking List Method
     public function BookingList()
     {
-        $allData = Booking::orderBy('id', 'desc')->get();
+        $allData = Booking::with('room.type', 'user')
+            ->orderBy('id', 'desc')
+            ->get();
         return view('backend.booking.booking_list', compact('allData'));
     }
 
@@ -32,6 +34,14 @@ class AdminBookingController extends Controller
     public function UpdateBookingStatus(Request $request, $id)
     {
         $booking = Booking::findOrFail($id);
+ 
+        //Rule: không cho đổi payment nếu đã Confirmed hoặc Completed
+        if (($booking->isConfirmed() || $booking->isCompleted()) && $request->payment_status == 0) {
+            return back()->with([
+                'message' => 'Payment cannot be changed after confirmation',
+                'alert-type' => 'error'
+            ]);
+        }
 
         $booking->payment_status = $request->payment_status;
         $booking->save();
@@ -43,8 +53,11 @@ class AdminBookingController extends Controller
         ];
 
         try {
-            if (isset($map[$request->status])) {
-                $booking->transition($map[$request->status]);
+            
+            if ($request->filled('status')) {
+                if (isset($map[$request->status])) {
+                    $booking->transition($map[$request->status]);
+                }
             }
 
             $notification = [

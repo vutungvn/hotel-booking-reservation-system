@@ -210,7 +210,7 @@
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <strong>{{ $editData->room->type->name }}</strong>
+                                                <strong>{{ optional(optional($editData->room)->type)->name ?? 'N/A' }}</strong>
                                             </td>
 
                                             <td>
@@ -338,22 +338,25 @@
                                             Booking Status
                                         </label>
 
-                                        <select name="status" class="form-select custom-select">
-  
-                                            @if ($editData->status == 'Pending')
-                                                <option value="Confirmed">Confirm</option>
-                                                <option value="Cancelled">Cancel</option>
-                                            @endif
-
-                                            @if ($editData->status == 'Confirmed')
-                                                <option value="Completed">Complete</option>
-                                                <option value="Cancelled">Cancel</option>
-                                            @endif
-
+                                        <select class="form-select custom-select" disabled>
+                                            <option>{{ $editData->status }}</option>
                                         </select>
+
+                                        <div class="mt-2 text-center">                        
+                                            <!-- ACTION -->
+                                            @if ($editData->isPending())
+                                                <button name="status" value="Confirmed" class="btn btn-primary">Confirm</button>
+                                                <button name="status" value="Cancelled" class="btn btn-danger">Cancel</button>
+                                            @endif
+
+                                            @if ($editData->isConfirmed())
+                                                <button name="status" value="Completed" class="btn btn-primary">Complete</button>
+                                                <button name="status" value="Cancelled" class="btn btn-danger">Cancel</button>
+                                            @endif
+                                        </div>      
                                     </div>
 
-                                    <div class="col-md-12 text-end">
+                                    <div class="col-md-12 text-start">
                                         <button type="submit" class="btn btn-primary btn-update">
                                             <i class='bx bx-save'></i>
                                             Update Booking

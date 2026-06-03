@@ -16,7 +16,7 @@ abstract class BaseBookingState implements BookingState
 
     protected function invalid(string $action): never
     {
-        throw new \Exception("Cannot {$action} when booking is {$this->getStatus()}");
+        throw new \Exception("{$action}");
     }
 
     public function confirm(): BookingState
