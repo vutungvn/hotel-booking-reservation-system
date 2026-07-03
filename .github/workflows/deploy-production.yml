@@ -150,6 +150,8 @@ jobs:
           context: .
           target: app
           push: true
+          provenance: false
+          sbom: false
           tags: ${{ steps.images.outputs.app_image }}
 
       - name: Build and push Nginx image
@@ -158,6 +160,8 @@ jobs:
           context: .
           target: nginx
           push: true
+          provenance: false
+          sbom: false
           tags: ${{ steps.images.outputs.nginx_image }}
 
   deploy:
